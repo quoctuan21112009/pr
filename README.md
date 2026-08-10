@@ -42,5 +42,5 @@ This achievement not only has the base version but also tiers
 </table>
 
 ## Contributions
-⭐ing my repo would mean a lot.
+⭐ing my repo would mean a lot..
 
