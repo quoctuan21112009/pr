@@ -3,6 +3,7 @@ name: achievement-collector
 on:
   schedule:
     - cron: '*/6 * * * *'
+  workflow_dispatch: # Bổ sung để bạn có thể bấm nút chạy thử ngay mà không cần đợi 6 phút
 
 jobs:
   block_update:
@@ -10,22 +11,21 @@ jobs:
     steps:
 
       - name: checkout repo content
-        uses: actions/checkout@v3
-        with: 
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.7.7'
-        
+          python-version: '3.10'
+
       - name: execute py script 
         run: python main.py
-          
+
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v6
         with:
-            token: ${{ secrets.PAT }}
-            commit-message: Update progress
-            title: Update progress
-            branch: update-progress
+          token: ${{ secrets.PAT }}
+          commit-message: Update progress
+          title: Update progress
+          branch: update-progress
+          delete-branch: true # Tự xóa nhánh phụ sau khi xong để tránh xung đột
