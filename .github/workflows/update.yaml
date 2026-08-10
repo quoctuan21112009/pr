@@ -1,9 +1,11 @@
 name: achievement-collector
 
 on:
+  push:
+    branches: [ main ] # Tự động chạy mỗi khi có commit mới lên nhánh main
   schedule:
     - cron: '*/6 * * * *'
-  workflow_dispatch: # Bổ sung để bạn có thể bấm nút chạy thử ngay mà không cần đợi 6 phút
+  workflow_dispatch:
 
 jobs:
   block_update:
@@ -28,4 +30,4 @@ jobs:
           commit-message: Update progress
           title: Update progress
           branch: update-progress
-          delete-branch: true # Tự xóa nhánh phụ sau khi xong để tránh xung đột
+          delete-branch: true
