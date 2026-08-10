@@ -1,29 +1,36 @@
-
-name: quoctuan21112009-maker
+name: Merge PR
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 jobs:
   merge:
     name: "Merge"
     runs-on: "ubuntu-latest"
     steps:
-
       - name: "Merge PR"
-        uses: "actions/github-script@v5"
+        uses: "actions/github-script@v7"
         with:
           github-token: "${{ secrets.PAT }}"
           script: |
-            const creator = context.payload.sender.login
-            if(creator != "quoctuan21112009-maker")
-              return
-            
-            const pull_number = ${{github.event.pull_request.number}}
-            const repository = context.repo
+            const creator = context.payload.sender.login;
+            if (creator !== "quoctuan21112009-maker") {
+              console.log(`Bỏ qua vì PR không phải do ${creator} tạo.`);
+              return;
+            }
+
+            const pull_number = context.payload.pull_request ? context.payload.pull_request.number : null;
+            if (!pull_number) {
+              console.log("Không tìm thấy thông tin Pull Request.");
+              return;
+            }
+
+            const repository = context.repo;
             await github.rest.pulls.merge({
               merge_method: "merge",
               owner: repository.owner,
               pull_number: pull_number,
               repo: repository.repo,
-            })
+            });
