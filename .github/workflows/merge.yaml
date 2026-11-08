@@ -4,33 +4,58 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+    inputs:
+      pull_number:
+        description: 'Nhập số PR cần merge (chỉ dùng khi kích hoạt thủ công)'
+        required: false
 
 jobs:
   merge:
     name: "Merge"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: "Merge PR"
         uses: "actions/github-script@v7"
         with:
           github-token: "${{ secrets.PAT }}"
           script: |
-            const creator = context.payload.sender.login;
-            if (creator !== "quoctuan21112009-maker") {
-              console.log(`Bỏ qua vì PR không phải do ${creator} tạo.`);
-              return;
+            // 1. Xác định số PR tùy thuộc vào cách kích hoạt (tự động hoặc thủ công)
+            let pull_number = context.payload.pull_request ? context.payload.pull_request.number : null;
+            if (!pull_number && context.eventName === 'workflow_dispatch') {
+              pull_number = parseInt(context.payload.inputs.pull_number);
             }
 
-            const pull_number = context.payload.pull_request ? context.payload.pull_request.number : null;
-            if (!pull_number) {
-              console.log("Không tìm thấy thông tin Pull Request.");
+            if (!pull_number || isNaN(pull_number)) {
+              console.log("Không tìm thấy số Pull Request hợp lệ.");
               return;
             }
 
             const repository = context.repo;
+
+            // 2. Lấy thông tin chi tiết của PR để biết chính xác ai là tác giả (PR Author)
+            const { data: pr } = await github.rest.pulls.get({
+              owner: repository.owner,
+              repo: repository.repo,
+              pull_number: pull_number,
+            });
+
+            const creator = pr.user.login;
+
+            // 3. Kiểm tra điều kiện tác giả
+            if (creator !== "quoctuan21112009-maker") {
+              console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không phải quoctuan21112009-maker.`);
+              return;
+            }
+
+            // 4. Tiến hành tự động Merge
+            console.log(`Đang merge PR #${pull_number} do ${creator} tạo...`);
             await github.rest.pulls.merge({
               merge_method: "merge",
               owner: repository.owner,
               pull_number: pull_number,
               repo: repository.repo,
             });
+            console.log(`Đã merge thành công PR #${pull_number}!`);
