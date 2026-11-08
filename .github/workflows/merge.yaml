@@ -22,7 +22,7 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
-            // 1. Xác định số PR tùy thuộc vào cách kích hoạt (tự động hoặc thủ công)
+            // 1. Xác định số PR tùy thuộc vào cách kích hoạt
             let pull_number = context.payload.pull_request ? context.payload.pull_request.number : null;
             if (!pull_number && context.eventName === 'workflow_dispatch') {
               pull_number = parseInt(context.payload.inputs.pull_number);
@@ -35,7 +35,7 @@ jobs:
 
             const repository = context.repo;
 
-            // 2. Lấy thông tin chi tiết của PR để biết chính xác ai là tác giả (PR Author)
+            // 2. Lấy thông tin chi tiết của PR để kiểm tra người tạo
             const { data: pr } = await github.rest.pulls.get({
               owner: repository.owner,
               repo: repository.repo,
@@ -44,18 +44,24 @@ jobs:
 
             const creator = pr.user.login;
 
-            // 3. Kiểm tra điều kiện tác giả tạo PR
-            if (creator !== "quoctuan21112009") {
-              console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không phải quoctuan21112009.`);
+            // 3. Danh sách các tài khoản/bot ĐƯỢC PHÉP tự động Merge
+            const allowedUsers = [
+              "quoctuan21112009",       // Tài khoản chính của bạn
+              "quoctuan21112009-maker", // Tài khoản phụ (nếu còn dùng)
+              "github-actions[bot]"     // Bot tự động chạy scheduled action
+            ];
+
+            if (!allowedUsers.includes(creator)) {
+              console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không nằm trong danh sách auto-merge.`);
               return;
             }
 
             // 4. Tiến hành tự động Merge
-            console.log(`Đang merge PR #${pull_number} do ${creator} tạo...`);
+            console.log(`Đang tiến hành tự động gộp PR #${pull_number} do ${creator} tạo...`);
             await github.rest.pulls.merge({
               merge_method: "merge",
               owner: repository.owner,
               pull_number: pull_number,
               repo: repository.repo,
             });
-            console.log(`Đã merge thành công PR #${pull_number}!`);
+            console.log(`Đã gộp thành công PR #${pull_number}!`);
