@@ -4,16 +4,22 @@ on:
   push:
     branches: [ main ] # Tự động chạy mỗi khi có commit mới lên nhánh main
   schedule:
-    - cron: '*/6 * * * *'
+    - cron: '*/1 * * * *'
   workflow_dispatch:
 
 jobs:
   block_update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
 
       - name: checkout repo content
         uses: actions/checkout@v4
+        with:
+          # Đưa token vào đây để cấu hình quyền Git ngay từ đầu
+          token: ${{ secrets.PAT }}
 
       - name: setup python
         uses: actions/setup-python@v5
