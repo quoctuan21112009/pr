@@ -45,8 +45,8 @@ jobs:
             const creator = pr.user.login;
 
             // 3. Kiểm tra điều kiện tác giả tạo PR
-            if (creator !== "quoctuan21112009-maker") {
-              console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không phải quoctuan21112009-maker.`);
+            if (creator !== "quoctuan21112009") {
+              console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không phải quoctuan21112009.`);
               return;
             }
 
