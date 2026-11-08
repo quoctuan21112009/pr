@@ -20,7 +20,7 @@ jobs:
       - name: "Merge PR"
         uses: "actions/github-script@v7"
         with:
-          github-token: "${{ secrets.PAT }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             // 1. Xác định số PR tùy thuộc vào cách kích hoạt (tự động hoặc thủ công)
             let pull_number = context.payload.pull_request ? context.payload.pull_request.number : null;
@@ -44,7 +44,7 @@ jobs:
 
             const creator = pr.user.login;
 
-            // 3. Kiểm tra điều kiện tác giả
+            // 3. Kiểm tra điều kiện tác giả tạo PR
             if (creator !== "quoctuan21112009-maker") {
               console.log(`Bỏ qua vì PR #${pull_number} do ${creator} tạo, không phải quoctuan21112009-maker.`);
               return;
